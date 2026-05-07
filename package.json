@@ -12,19 +12,19 @@
   "contributes": {
     "commands": [
       {
-        "command": "shadow.showProjectWizard",
+        "command": "showProjectWizard",
         "title":   "New Project (Shadow)"
       },
       {
-        "command": "shadow.showProjectImport",
+        "command": "showProjectImport",
         "title":   "Import Project (Shadow)"
       },
-      {
-        "command": "shadow.openProject",
+      { 
+        "command": "openProject",
         "title":   "Open Project (Shadow)"
       },
       {
-        "command": "shadow.deleteProject",
+        "command": "deleteProject",
         "title":   "Delete Project from List (Shadow)"
       }
     ]

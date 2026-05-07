@@ -30,7 +30,7 @@ class Extension {
     const commands = [
 
       // ── New Project wizard ──────────────────────────────────────────────
-      vscode.commands.registerCommand('shadow.showProjectWizard', () => {
+      vscode.commands.registerCommand('showProjectWizard', () => {
         if (!this.chipConfigPanel?.panel) {
           this.chipConfigPanel = new ChipConfigPanel(context);
         }
@@ -39,7 +39,7 @@ class Extension {
       }),
 
       // ── Import existing project ─────────────────────────────────────────
-      vscode.commands.registerCommand('shadow.showProjectImport', () => {
+      vscode.commands.registerCommand('showProjectImport', () => {
         if (!this.projectImportPanel?.panel) {
           this.projectImportPanel = new ProjectImportPanel(context);
         }
@@ -49,7 +49,7 @@ class Extension {
 
       // ── Open project by .hiproj path ────────────────────────────────────
       vscode.commands.registerCommand(
-        'shadow.openProject',
+        'openProject',
         async (hiprojPath: string) => {
           if (!hiprojPath) { return; }
           const projectDir = path.dirname(hiprojPath);
@@ -62,7 +62,7 @@ class Extension {
 
       // ── Delete project from list ────────────────────────────────────────
       vscode.commands.registerCommand(
-        'shadow.deleteProject',
+        'deleteProject',
         (hiprojPath: string) => {
           const { Command } = require('./backEnd/command');
           Command.deleteProject({ paramData: { projectPath: hiprojPath } });

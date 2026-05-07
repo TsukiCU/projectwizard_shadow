@@ -163,7 +163,9 @@ const ProjectWizard = (): JSX.Element => {
   };
 
   // ── Flat soc options from grouped chiplist ──────────────────────────────────
-  const allChips: SocChipItem[] = chipList.flatMap((g) => g.children ?? []);
+  const allChips: SocChipItem[] = chipList.reduce<SocChipItem[]>((list, group) => {
+    return list.concat(group.children ?? []);
+  }, []);
 
   // ── Validation rules ────────────────────────────────────────────────────────
   const nameRules: any[] = [

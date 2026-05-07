@@ -10,52 +10,82 @@ import { hot }       from 'react-hot-loader/root';
 import ProjectWizard from './projectWizard';
 import ProjectImport from './projectImport/projectImport';
 import { Command }   from './core/command';
+import { createRoot } from 'react-dom/client';
 import { IStore }    from './core/store/store';
 import type { Message } from '../backEnd/interface/api';
 
-// @ts-expect-error injected by VSCode webview
+type VSCodeApi = {
+  postMessage: (message: unknown) => void;
+  getState?: () => unknown;
+  setState?: (state: unknown) => void;
+};
+
+declare function acquireVsCodeApi(): VSCodeApi;
+
+// 如果没有安装 @types/webpack-env，用这个避免 module 报错
+declare const module: any;
+
 export const vscode = acquireVsCodeApi();
 
-const root       = document.getElementById('app');
+const root = document.getElementById('app');
 const flagCreate = document.getElementById('flagCreate');
 const flagImport = document.getElementById('flagImport');
 
-let app: JSX.Element;
-if (flagCreate) {
-  app = (
-    <Provider store={IStore.getStore()}>
-      <ProjectWizard />
-    </Provider>
-  );
-} else if (flagImport) {
-  app = (
-    <Provider store={IStore.getStore()}>
-      <ProjectImport />
-    </Provider>
-  );
-} else {
-  // fallback – render nothing meaningful
-  app = <div />;
+if (!root) {
+  throw new Error('Cannot find root element: #app');
 }
 
-ReactDOM.render(hot(app), root);
+const store = IStore.getStore();
+
+function createApp(): React.ReactElement {
+  if (flagCreate) {
+    return (
+      <Provider store={store}>
+        <ProjectWizard />
+      </Provider>
+    );
+  }
+
+  if (flagImport) {
+    return (
+      <Provider store={store}>
+        <ProjectImport />
+      </Provider>
+    );
+  }
+
+  // fallback – render nothing meaningful
+  return <div />;
+}
+
+const reactRoot = createRoot(root);
+
+reactRoot.render(createApp());
 
 // close progress (no-op in shadow, keeps compatibility)
 vscode.postMessage({ method: 'closeProgress' });
 
 // hot-reload
-const anyModule = module as any;
-if (anyModule.hot) {
-  anyModule.hot.accept('./index', () => ReactDOM.render(hot(app), root));
+if (module.hot) {
+  module.hot.accept('./index', () => {
+    reactRoot.render(createApp());
+  });
 }
 
 // messages from the extension
-window.addEventListener('message', (event) => {
-  const message: Message = event.data;
+window.addEventListener('message', (event: MessageEvent) => {
+  const message = event.data as Message;
   const func = Reflect.get(Command, message.method);
+
   if (typeof func === 'function') {
     Reflect.apply(func, Command, [message]);
   }
 });
 
-document.addEventListener('contextmenu', (e) => e.preventDefault());
+document.addEventListener('contextmenu', (event: MouseEvent) => {
+  event.preventDefault();
+});
+
+// 保留原 import 时，避免 noUnusedLocals 报 ReactDOM/hot 未使用
+void ReactDOM;
+void hot;
