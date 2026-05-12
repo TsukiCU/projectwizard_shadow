@@ -19,18 +19,19 @@ str.split(/\r?\n/).forEach((line) => {
   }
 });
 
-const entry = theme === 'dark'
-  ? [
-      path.join(rootDir, 'src', 'frontEnd', 'index.tsx'),
-      path.join(rootDir, 'src', 'frontEnd', 'a-styles', 'index.less'),
-    ]
-  : path.join(rootDir, 'src', 'frontEnd', 'a-styles', 'index.less');
+// Dark build: React app (index.tsx) + Less → bundle.js + themes/dark.css + index.html
+// Light build: Less only → themes/light.css  (bundle.js and index.html are NOT touched)
+const entry = [
+  ...(theme === 'dark' ? [path.join(rootDir, 'src', 'frontEnd', 'index.tsx')] : []),
+  path.join(rootDir, 'src', 'frontEnd', 'a-styles', 'index.less'),
+];
 
 module.exports = {
   mode:    'development',
   entry,
   output: {
-    filename: 'bundle.js',
+    // Light theme only produces CSS; write its tiny JS stub to a throwaway file
+    filename: theme === 'dark' ? 'bundle.js' : '_noop_light.js',
     path:     path.join(rootDir, 'dist'),
   },
   devtool: 'nosources-source-map',
@@ -91,11 +92,12 @@ module.exports = {
       chunkFilename: `themes/${theme}.css`,
       ignoreOrder:   false,
     }),
-    new HtmlWebpackPlugin({
+    // Only dark build writes index.html (light build must not overwrite it)
+    ...(theme === 'dark' ? [new HtmlWebpackPlugin({
       template: path.join(rootDir, 'src', 'frontEnd', 'index.html'),
       filename: 'index.html',
       inject:   true,
       theme,
-    }),
+    })] : []),
   ],
 };
