@@ -22,6 +22,8 @@ import {
   findHiprojFiles,
   showMessageModal,
   getUserDir,
+  readUserConfig,
+  writeUserConfig,
 } from './utils';
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
@@ -57,7 +59,7 @@ function writeHiproj(projectData: ShadowProjectData, projectDir: string): void {
       platform:          projectData.platform,
       project_name:      projectData.projectName,
       project_path:      projectDir,
-      sdk_path:          '',
+      sdk_path:          projectData.sdkPath ?? '',
       series_name:       'shadow',
       project_type:      'SHADOW',
     },
@@ -108,9 +110,13 @@ export class Command {
 
   // ── User config ────────────────────────────────────────────────────────────
 
-  static getUserConfig(operate: OperateStruct): void {
+  static getUserConfig(_operate: OperateStruct): void {
+    const saved = extension.globalStoragePath
+      ? readUserConfig(extension.globalStoragePath)
+      : {};
     const cfg = {
-      projectCreate_last_projectPath: getUserDir(),
+      projectCreate_last_projectPath: saved.projectCreate_last_projectPath ?? getUserDir(),
+      projectCreate_last_sdkPath:     saved.projectCreate_last_sdkPath     ?? '',
     };
     callback('userConfig', cfg);
   }
@@ -131,7 +137,36 @@ export class Command {
       title: res('selectFolderTitle'),
     }).then((result) => {
       if (result?.[0]?.fsPath) {
-        callback(key, result[0].fsPath);
+        const selected = result[0].fsPath;
+        if (extension.globalStoragePath) {
+          writeUserConfig({ projectCreate_last_projectPath: selected }, extension.globalStoragePath);
+        }
+        callback(key, selected);
+      }
+    });
+  }
+
+  // ── SDK path dialog ────────────────────────────────────────────────────────
+
+  static selectSdkPath(operate: OperateStruct): void {
+    const { key, currentValue } = operate.paramData ?? {};
+    const defaultUri = currentValue && fs.existsSync(currentValue)
+      ? vscode.Uri.file(currentValue)
+      : vscode.Uri.file(getUserDir());
+
+    vscode.window.showOpenDialog({
+      canSelectFiles:    false,
+      canSelectFolders:  true,
+      canSelectMany:     false,
+      defaultUri,
+      title: res('slectSdkPath'),
+    }).then((result) => {
+      if (result?.[0]?.fsPath) {
+        const selected = result[0].fsPath;
+        if (extension.globalStoragePath) {
+          writeUserConfig({ projectCreate_last_sdkPath: selected }, extension.globalStoragePath);
+        }
+        callback(key, selected);
       }
     });
   }
@@ -170,17 +205,25 @@ export class Command {
       return;
     }
 
-    // Write minimal placeholder .hiproj
+    // Write .hiproj file (includes sdk_path)
     writeHiproj(projectData, projectDir);
 
-    // Update project lists
+    // Persist the chosen paths so getUserConfig can pre-fill them next time
+    if (extension.globalStoragePath) {
+      writeUserConfig({
+        projectCreate_last_projectPath: projectData.projectPath,
+        projectCreate_last_sdkPath:     projectData.sdkPath ?? '',
+      }, extension.globalStoragePath);
+    }
+
+    // Update project lists — schema matches projectwizard: { name, path, chip, board, time }
+    const hiprojPath = path.join(projectDir, `${projectData.projectName}.hiproj`);
     const item = {
-      name:     projectData.projectName,
-      path:     path.join(projectDir, `${projectData.projectName}.hiproj`),
-      chip:     projectData.soc,
-      board:    projectData.board,
-      platform: projectData.platform,
-      time:     new Date().toLocaleString('zh-CN'),
+      name:  projectData.projectName,
+      path:  hiprojPath,
+      chip:  projectData.soc.toUpperCase(),
+      board: projectData.board.toUpperCase(),
+      time:  new Date().toLocaleString('zh-CN'),
     };
     if (extension.globalStoragePath) {
       addItemsToProList([item], extension.globalStoragePath);
@@ -259,15 +302,14 @@ export class Command {
     for (const hiprojPath of selectedPaths) {
       const content = getHiprojContent(hiprojPath);
       if (!content) { failed.push(hiprojPath); continue; }
-      const chip  = content?.information?.['board_build.mcu'] ?? '';
-      const board = content?.information?.board ?? chip;
+      const chip  = (content?.information?.['board_build.mcu'] ?? '').toUpperCase();
+      const board = (content?.information?.board ?? chip).toUpperCase();
       const item = {
-        name:     path.parse(hiprojPath).name,
-        path:     hiprojPath,
+        name:  path.parse(hiprojPath).name,
+        path:  hiprojPath,
         chip,
         board,
-        platform: content?.information?.platform ?? '',
-        time:     new Date().toLocaleString('zh-CN'),
+        time:  new Date().toLocaleString('zh-CN'),
       };
       addItemsToProList([item], extension.globalStoragePath!);
       updateOneItemToLatestList(item, extension.globalStoragePath!);

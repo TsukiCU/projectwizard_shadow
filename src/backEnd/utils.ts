@@ -17,6 +17,31 @@ export function getUserDir(): string {
   return process.env.HOME ?? process.env.USERPROFILE ?? '/';
 }
 
+// ─── User config helpers ──────────────────────────────────────────────────────
+
+const USER_CONFIG_FILE = 'shadow_userconfig.json';
+
+export function readUserConfig(globalStoragePath: string): Record<string, string> {
+  const filePath = path.join(path.dirname(globalStoragePath), USER_CONFIG_FILE);
+  if (!fs.existsSync(filePath)) { return {}; }
+  try {
+    return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+  } catch {
+    return {};
+  }
+}
+
+export function writeUserConfig(updates: Record<string, string>, globalStoragePath: string): void {
+  const filePath = path.join(path.dirname(globalStoragePath), USER_CONFIG_FILE);
+  const existing = readUserConfig(globalStoragePath);
+  const merged   = { ...existing, ...updates };
+  try {
+    fs.writeFileSync(filePath, JSON.stringify(merged, null, 2), 'utf-8');
+  } catch {
+    // non-fatal — user config persistence is best-effort
+  }
+}
+
 // ─── Project list helpers ─────────────────────────────────────────────────────
 
 const PROJECT_LIST_FILE = 'shadow_projectlist.json';

@@ -37,5 +37,8 @@
   "importPartialFailed":      "{0} 个工程导入失败",
   "fieldsMissing":            "请填写所有必填字段",
   "createFolderFailed":       "创建文件夹失败：{0}",
-  "pathNotExist":             "{0} 不存在或无访问权限"
+  "pathNotExist":             "{0} 不存在或无访问权限",
+  "sdkPath":                  "软件包路径",
+  "sdkPathInputPrompt":       "选择软件包路径",
+  "slectSdkPath":             "选择软件包路径"
 }

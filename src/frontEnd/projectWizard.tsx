@@ -20,9 +20,9 @@ const { Option } = Select;
 
 // ─── Platform constraint map ──────────────────────────────────────────────────
 const PLATFORM_MAP: Record<string, { defaultPlatform: 'CPU' | 'NPU'; platformFixed: boolean }> = {
-  ws63:  { defaultPlatform: 'CPU', platformFixed: true  },
-  '3322':{ defaultPlatform: 'NPU', platformFixed: true  },
-  mcu:   { defaultPlatform: 'CPU', platformFixed: false },
+  ws63:   { defaultPlatform: 'CPU', platformFixed: true  },
+  '3322': { defaultPlatform: 'NPU', platformFixed: true  },
+  mcu:    { defaultPlatform: 'CPU', platformFixed: false },
   '1156e':{ defaultPlatform: 'CPU', platformFixed: false },
 };
 
@@ -35,19 +35,21 @@ const ProjectWizard = (): JSX.Element => {
   const [form]   = Form.useForm();
 
   // state
-  const [isOpen,          setIsOpen]          = useState(true);
-  const [isErrOpen,       setIsErrOpen]        = useState(false);
-  const [soc,             setSoc]              = useState('');
-  const [platform,        setPlatform]         = useState<'CPU'|'NPU'|''>('');
-  const [platformFixed,   setPlatformFixed]    = useState(false);
-  const [projectPath,     setProjectPath]      = useState('');
-  const [projectName,     setProjectName]      = useState('');
-  const [projectPathWrong, setProjectPathWrong] = useState(false);
+  const [isOpen,           setIsOpen]           = useState(true);
+  const [isErrOpen,        setIsErrOpen]         = useState(false);
+  const [soc,              setSoc]               = useState('');
+  const [platform,         setPlatform]          = useState<'CPU'|'NPU'|''>('');
+  const [platformFixed,    setPlatformFixed]     = useState(false);
+  const [projectPath,      setProjectPath]       = useState('');
+  const [projectName,      setProjectName]       = useState('');
+  const [sdkPath,          setSdkPath]           = useState('');
+  const [projectPathWrong, setProjectPathWrong]  = useState(false);
 
   // Redux state
   const chipList: SocGroupItem[]  = useSelector((s: any) => s.entities.chipList  ?? []);
   const userConfig: any           = useSelector((s: any) => s.entities.userConfig ?? null);
   const projectPathInfo: any      = useSelector((s: any) => s.entities.projectPathInfo);
+  const sdkPathInfo: any          = useSelector((s: any) => s.entities.sdkPathInfo);
   const projectPathRightInfo: any = useSelector((s: any) => s.entities.projectPathRightInfo);
   const projectPathWrongInfo: any = useSelector((s: any) => s.entities.projectPathWrongInfo);
   const thisProjectExists: any    = useSelector((s: any) => s.entities.thisProjectExists);
@@ -73,15 +75,19 @@ const ProjectWizard = (): JSX.Element => {
     dispatch(getInfo(op3));
   }, [dispatch]);
 
-  // pre-fill last used path from userConfig
+  // pre-fill last used paths from userConfig
   useEffect(() => {
     if (userConfig?.projectCreate_last_projectPath) {
       form.setFieldsValue({ projectPath: userConfig.projectCreate_last_projectPath });
       setProjectPath(userConfig.projectCreate_last_projectPath);
     }
+    if (userConfig?.projectCreate_last_sdkPath) {
+      form.setFieldsValue({ sdkPath: userConfig.projectCreate_last_sdkPath });
+      setSdkPath(userConfig.projectCreate_last_sdkPath);
+    }
   }, [userConfig]);
 
-  // path selected via dialog
+  // project path selected via dialog
   useEffect(() => {
     if (projectPathInfo) {
       form.setFieldsValue({ projectPath: projectPathInfo });
@@ -89,6 +95,14 @@ const ProjectWizard = (): JSX.Element => {
       form.validateFields(['projectPath']);
     }
   }, [projectPathInfo]);
+
+  // sdk path selected via dialog
+  useEffect(() => {
+    if (sdkPathInfo) {
+      form.setFieldsValue({ sdkPath: sdkPathInfo });
+      setSdkPath(sdkPathInfo);
+    }
+  }, [sdkPathInfo]);
 
   // path validation feedback
   useEffect(() => {
@@ -140,6 +154,16 @@ const ProjectWizard = (): JSX.Element => {
     dispatch(getInfo(op));
   };
 
+  // ── Browse SDK path ─────────────────────────────────────────────────────────
+  const onBrowseSdkPath = (): void => {
+    const op: OperateStruct = {
+      operationType: 'selectSdkPath',
+      paramData: { key: 'sdkPathInfo', currentValue: sdkPath },
+      source: 'wizard',
+    };
+    dispatch(getInfo(op));
+  };
+
   // ── Finish ──────────────────────────────────────────────────────────────────
   const onFinish = (): void => {
     form.validateFields().then(() => {
@@ -151,6 +175,7 @@ const ProjectWizard = (): JSX.Element => {
           platform,
           projectName,
           projectPath,
+          sdkPath,
         },
       }));
     }).catch(() => { /* validation failed, show inline errors */ });
@@ -184,6 +209,9 @@ const ProjectWizard = (): JSX.Element => {
       validator: (): Promise<void> =>
         projectPathWrong ? Promise.reject(t('projectPathNotExist')) : Promise.resolve(),
     },
+  ];
+  const sdkPathRules: any[] = [
+    { required: true, message: t('fieldCannotEmpty', { field: t('sdkPath') }) },
   ];
 
   return (
@@ -279,6 +307,29 @@ const ProjectWizard = (): JSX.Element => {
                     type="primary"
                     style={{ paddingLeft: 10 }}
                     onClick={onBrowsePath}
+                    icon={<FolderOpenOutlined style={{ color: '#fff' }} />}
+                  />
+                </Input.Group>
+              </Form.Item>
+            </Col>
+          </Row>
+
+          {/* ── Row 4: SDK Path ── */}
+          <Row>
+            <Col span={24}>
+              <Form.Item label={t('sdkPath')} name="sdkPath" rules={sdkPathRules}>
+                <Input.Group compact>
+                  <Input
+                    readOnly
+                    style={{ width: 'calc(100% - 37px)' }}
+                    placeholder={t('sdkPathInputPrompt')}
+                    value={sdkPath}
+                    onClick={onBrowseSdkPath}
+                  />
+                  <Button
+                    type="primary"
+                    style={{ paddingLeft: 10 }}
+                    onClick={onBrowseSdkPath}
                     icon={<FolderOpenOutlined style={{ color: '#fff' }} />}
                   />
                 </Input.Group>

@@ -10,6 +10,7 @@ export interface ShadowProjectData {
   platform: 'CPU' | 'NPU' | '';
   projectName: string;
   projectPath: string;
+  sdkPath: string;
 }
 
 export interface OperateStruct {
@@ -44,10 +45,9 @@ export interface SocGroupItem {
 export type Invoker = 'welcomePage' | 'handSelect' | 'openAfterCreate' | 'openAfterImport' | 'other';
 
 export interface ProjectListItem {
-  name: string;
-  path: string;
-  chip: string;
+  name:  string;
+  path:  string;
+  chip:  string;
   board: string;
-  platform: string;
-  time: string;
+  time:  string;
 }

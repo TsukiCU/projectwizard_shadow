@@ -37,5 +37,8 @@
   "importPartialFailed":      "{0} project(s) failed to import",
   "fieldsMissing":            "Please fill in all required fields",
   "createFolderFailed":       "Failed to create folder: {0}",
-  "pathNotExist":             "{0} does not exist or is not accessible"
+  "pathNotExist":             "{0} does not exist or is not accessible",
+  "sdkPath":                  "SDK Path",
+  "sdkPathInputPrompt":       "Select the SDK package path",
+  "slectSdkPath":             "Select SDK Path"
 }

@@ -94,9 +94,10 @@ module.exports = {
     }),
     // Only dark build writes index.html (light build must not overwrite it)
     ...(theme === 'dark' ? [new HtmlWebpackPlugin({
-      template: path.join(rootDir, 'src', 'frontEnd', 'index.html'),
-      filename: 'index.html',
-      inject:   true,
+      template:      path.join(rootDir, 'src', 'frontEnd', 'index.html'),
+      filename:      'index.html',
+      inject:        'body',
+      scriptLoading: 'blocking',
       theme,
     })] : []),
   ],
