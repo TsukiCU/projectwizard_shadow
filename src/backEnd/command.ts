@@ -233,8 +233,8 @@ export class Command {
     // Signal wizard to close
     callback('thisProjectNotExists', new Date().getTime());
 
-    // Open the project folder
-    await vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(projectDir));
+    // Open the SDK path (mirrors projectwizard behaviour)
+    await vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(projectData.sdkPath));
     extension.deactivate('chipConfig');
   }
 

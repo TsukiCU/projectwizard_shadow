@@ -44,13 +44,10 @@ export function writeUserConfig(updates: Record<string, string>, globalStoragePa
 
 // ─── Project list helpers ─────────────────────────────────────────────────────
 
-const PROJECT_LIST_FILE = 'shadow_projectlist.json';
-const LATEST_LIST_FILE  = 'shadow_latestlist.json';
-
-function getListPath(globalStoragePath: string, file: string): string {
-  // Store one level up from globalStorageUri (same pattern as projectwizard)
-  return path.join(path.dirname(globalStoragePath), file);
-}
+// Same suffix constants as projectwizard — resolves to the shared
+// ~/Library/Application Support/Code/projectlist.json that the welcome page reads.
+const SUFFIX_PROJECT_LIST = '../../../projectlist.json';
+const SUFFIX_LATEST_LIST  = '../../../latestlist.json';
 
 function readJsonSafe(filePath: string): any[] {
   if (!fs.existsSync(filePath)) { return []; }
@@ -62,44 +59,45 @@ function readJsonSafe(filePath: string): any[] {
 }
 
 export function addItemsToProList(items: ProjectListItem[], globalStoragePath: string): void {
-  const listPath = getListPath(globalStoragePath, PROJECT_LIST_FILE);
+  const listPath = path.join(globalStoragePath, SUFFIX_PROJECT_LIST);
   const list: ProjectListItem[] = readJsonSafe(listPath);
   for (const item of items) {
     const idx = list.findIndex((x) => x.path === item.path);
     if (idx >= 0) {
       list[idx] = item;
     } else {
-      list.push(item);
+      list.unshift(item);
     }
   }
-  fs.writeFileSync(listPath, JSON.stringify(list, null, 2), 'utf-8');
+  fs.writeFileSync(listPath, JSON.stringify(list), 'utf-8');
 }
 
 export function updateOneItemToLatestList(item: ProjectListItem, globalStoragePath: string): void {
-  const listPath = getListPath(globalStoragePath, LATEST_LIST_FILE);
+  const listPath = path.join(globalStoragePath, SUFFIX_LATEST_LIST);
   let list: ProjectListItem[] = readJsonSafe(listPath);
   list = list.filter((x) => x.path !== item.path);
   list.unshift(item);
-  if (list.length > 50) { list = list.slice(0, 50); }
-  fs.writeFileSync(listPath, JSON.stringify(list, null, 2), 'utf-8');
+  if (list.length > 10) { list = list.slice(0, 10); }
+  fs.writeFileSync(listPath, JSON.stringify(list), 'utf-8');
 }
 
 export function getProjectList(globalStoragePath: string): ProjectListItem[] {
-  return readJsonSafe(getListPath(globalStoragePath, PROJECT_LIST_FILE));
+  return readJsonSafe(path.join(globalStoragePath, SUFFIX_PROJECT_LIST));
 }
 
 export function getLatestList(globalStoragePath: string): ProjectListItem[] {
-  return readJsonSafe(getListPath(globalStoragePath, LATEST_LIST_FILE));
+  return readJsonSafe(path.join(globalStoragePath, SUFFIX_LATEST_LIST));
 }
 
 export function deleteFromProjectList(targetPath: string, globalStoragePath: string): void {
-  const listPath = getListPath(globalStoragePath, PROJECT_LIST_FILE);
-  const list: ProjectListItem[] = readJsonSafe(listPath).filter((x) => x.path !== targetPath);
-  fs.writeFileSync(listPath, JSON.stringify(list, null, 2), 'utf-8');
+  const listPath   = path.join(globalStoragePath, SUFFIX_PROJECT_LIST);
+  const latestPath = path.join(globalStoragePath, SUFFIX_LATEST_LIST);
 
-  const latestPath = getListPath(globalStoragePath, LATEST_LIST_FILE);
-  const latest: ProjectListItem[] = readJsonSafe(latestPath).filter((x) => x.path !== targetPath);
-  fs.writeFileSync(latestPath, JSON.stringify(latest, null, 2), 'utf-8');
+  const list   = readJsonSafe(listPath).filter((x: any) => x.path !== targetPath);
+  const latest = readJsonSafe(latestPath).filter((x: any) => x.path !== targetPath);
+
+  fs.writeFileSync(listPath,   JSON.stringify(list),   'utf-8');
+  fs.writeFileSync(latestPath, JSON.stringify(latest), 'utf-8');
 }
 
 // ─── hiproj helpers ───────────────────────────────────────────────────────────
