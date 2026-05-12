@@ -1,0 +1,13 @@
+.vscode/**
+node_modules/**
+src/**
+scripts/**
+prompts/**
+out/**
+**/*.map
+**/*.ts
+!**/*.d.ts
+.gitignore
+.eslintrc*
+tsconfig.json
+webpack.*.js
