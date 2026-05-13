@@ -227,24 +227,24 @@ const ProjectWizard = (): JSX.Element => {
         visible={isOpen}
         width={710}
         onCancel={onCancel}
-        footer={
-          <Space>
-            <Button type="primary" onClick={onFinish}>{t('finished')}</Button>
-            <Button onClick={onCancel}>{t('cancel')}</Button>
-          </Space>
-        }
+        footer={[
+          <Space direction="horizontal" size="large">
+            <div className="footerBar">
+              <Button type="primary" onClick={onFinish}>{t('finished')}</Button>
+              <Button onClick={onCancel}>{t('cancel')}</Button>
+            </div>
+          </Space>,
+        ]}
       >
-        <strong>{t('projectCreateTitle')}</strong>
-        <br />
-        <span style={{ color: '#a3a3a3' }}>{t('projectCreateDescription')}</span>
-        <br /><br />
+        <strong>{t('projectCreateTitle')}</strong><br />
+        <span style={{ color: '#A3A3A3' }}>{t('projectCreateDescription')}</span><br /><br />
 
         <Form layout="horizontal" form={form} autoComplete="off">
           <Space direction="vertical" size="small" className="width100 project-wizard">
 
             {/* ── Row 1: SOC + Platform ── */}
-            <Row gutter={16}>
-              <Col span={12}>
+            <Row>
+              <Col span={7}>
                 <p>{t('SOC')}</p>
                 <Form.Item
                   name="soc"
@@ -264,7 +264,7 @@ const ProjectWizard = (): JSX.Element => {
                 </Form.Item>
               </Col>
 
-              <Col span={12}>
+              <Col span={6} offset={2}>
                 <p>{t('platform')}</p>
                 <Form.Item
                   name="platform"
@@ -285,7 +285,7 @@ const ProjectWizard = (): JSX.Element => {
 
             {/* ── Row 2: Project Name ── */}
             <Row>
-              <Col span={24}>
+              <Col>
                 <p>{t('projectName')}</p>
                 <Form.Item name="projectName" rules={nameRules}>
                   <Input
@@ -299,11 +299,12 @@ const ProjectWizard = (): JSX.Element => {
 
             {/* ── Row 3: Project Path ── */}
             <Row>
-              <Col span={24}>
+              <Col>
                 <p>{t('projectPath')}</p>
                 <Form.Item name="projectPath" rules={pathRules}>
                   <Input.Group compact>
                     <Input
+                      className="ant-input-text"
                       readOnly
                       style={{ width: 'calc(100% - 37px)' }}
                       placeholder={t('projectPathInputPrompt')}
@@ -311,34 +312,37 @@ const ProjectWizard = (): JSX.Element => {
                       onClick={onBrowsePath}
                     />
                     <Button
+                      className="browse"
                       type="primary"
                       style={{ paddingLeft: 10 }}
                       onClick={onBrowsePath}
-                      icon={<FolderOpenOutlined style={{ color: '#fff' }} />}
+                      icon={<FolderOpenOutlined style={{ color: '#FFFFFF', width: '14px', height: '14px' }} />}
                     />
                   </Input.Group>
                 </Form.Item>
               </Col>
             </Row>
 
-            {/* ── Row 4: SDK Path ── */}
+            {/* ── Row 4: SDK ── */}
             <Row>
-              <Col span={24}>
-                <p>{t('sdkPath')}</p>
+              <Col>
+                <p>{t('sdk')}</p>
                 <Form.Item name="sdkPath" rules={sdkPathRules}>
                   <Input.Group compact>
                     <Input
+                      className="ant-input-text"
                       readOnly
                       style={{ width: 'calc(100% - 37px)' }}
-                      placeholder={t('sdkPathInputPrompt')}
+                      placeholder={t('choosedSDKpath')}
                       value={sdkPath}
                       onClick={onBrowseSdkPath}
                     />
                     <Button
+                      className="browse"
                       type="primary"
                       style={{ paddingLeft: 10 }}
                       onClick={onBrowseSdkPath}
-                      icon={<FolderOpenOutlined style={{ color: '#fff' }} />}
+                      icon={<FolderOpenOutlined style={{ color: '#FFFFFF', width: '14px', height: '14px' }} />}
                     />
                   </Input.Group>
                 </Form.Item>
