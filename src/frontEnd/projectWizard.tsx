@@ -10,6 +10,7 @@ import {
 } from 'antd';
 import { FolderOpenOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import NewProjectSvg from './costomIcons/newProjectIcon';
 
 import { getInfo, sendProjectData } from './actions';
 import type { OperateStruct, SocChipItem, SocGroupItem } from '../backEnd/interface/model';
@@ -217,11 +218,14 @@ const ProjectWizard = (): JSX.Element => {
   return (
     <>
       <Modal
-        title={
-          <span style={{ color: '#666' }}>{t('projectWizard')}</span>
-        }
+        title={[
+          <span>
+            <NewProjectSvg />
+            <span style={{ color: '#666666', marginLeft: '8px' }}>{t('projectWizard')}</span>
+          </span>,
+        ]}
         visible={isOpen}
-        width={600}
+        width={710}
         onCancel={onCancel}
         footer={
           <Space>
@@ -235,108 +239,113 @@ const ProjectWizard = (): JSX.Element => {
         <span style={{ color: '#a3a3a3' }}>{t('projectCreateDescription')}</span>
         <br /><br />
 
-        <Form layout="vertical" form={form} autoComplete="off">
+        <Form layout="horizontal" form={form} autoComplete="off">
+          <Space direction="vertical" size="small" className="width100 project-wizard">
 
-          {/* ── Row 1: SOC + Platform ── */}
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                label={t('SOC')}
-                name="soc"
-                rules={[{ required: true, message: t('fieldCannotEmpty', { field: t('SOC') }) }]}
-              >
-                <Select
-                  placeholder={t('selectSoc')}
-                  onChange={onSocChange}
-                  showSearch
+            {/* ── Row 1: SOC + Platform ── */}
+            <Row gutter={16}>
+              <Col span={12}>
+                <p>{t('SOC')}</p>
+                <Form.Item
+                  name="soc"
+                  rules={[{ required: true, message: t('fieldCannotEmpty', { field: t('SOC') }) }]}
                 >
-                  {allChips.map((chip) => (
-                    <Option key={chip.value} value={chip.value}>
-                      {chip.title}
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
+                  <Select
+                    placeholder={t('selectSoc')}
+                    onChange={onSocChange}
+                    showSearch
+                  >
+                    {allChips.map((chip) => (
+                      <Option key={chip.value} value={chip.value}>
+                        {chip.title}
+                      </Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
 
-            <Col span={12}>
-              <Form.Item
-                label={t('platform')}
-                name="platform"
-                rules={[{ required: true, message: t('fieldCannotEmpty', { field: t('platform') }) }]}
-              >
-                <Select
-                  value={platform || undefined}
-                  disabled={platformFixed || !soc}
-                  onChange={(v: 'CPU' | 'NPU') => setPlatform(v)}
-                  placeholder="—"
+              <Col span={12}>
+                <p>{t('platform')}</p>
+                <Form.Item
+                  name="platform"
+                  rules={[{ required: true, message: t('fieldCannotEmpty', { field: t('platform') }) }]}
                 >
-                  <Option value="CPU">{t('CPU')}</Option>
-                  <Option value="NPU">{t('NPU')}</Option>
-                </Select>
-              </Form.Item>
-            </Col>
-          </Row>
+                  <Select
+                    value={platform || undefined}
+                    disabled={platformFixed || !soc}
+                    onChange={(v: 'CPU' | 'NPU') => setPlatform(v)}
+                    placeholder="—"
+                  >
+                    <Option value="CPU">{t('CPU')}</Option>
+                    <Option value="NPU">{t('NPU')}</Option>
+                  </Select>
+                </Form.Item>
+              </Col>
+            </Row>
 
-          {/* ── Row 2: Project Name ── */}
-          <Row>
-            <Col span={24}>
-              <Form.Item label={t('projectName')} name="projectName" rules={nameRules}>
-                <Input
-                  placeholder={t('projectNameInputPrompt')}
-                  value={projectName}
-                  onChange={(e) => setProjectName(e.target.value)}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          {/* ── Row 3: Project Path ── */}
-          <Row>
-            <Col span={24}>
-              <Form.Item label={t('projectPath')} name="projectPath" rules={pathRules}>
-                <Input.Group compact>
+            {/* ── Row 2: Project Name ── */}
+            <Row>
+              <Col span={24}>
+                <p>{t('projectName')}</p>
+                <Form.Item name="projectName" rules={nameRules}>
                   <Input
-                    readOnly
-                    style={{ width: 'calc(100% - 37px)' }}
-                    placeholder={t('projectPathInputPrompt')}
-                    value={projectPath}
-                    onClick={onBrowsePath}
+                    placeholder={t('projectNameInputPrompt')}
+                    value={projectName}
+                    onChange={(e) => setProjectName(e.target.value)}
                   />
-                  <Button
-                    type="primary"
-                    style={{ paddingLeft: 10 }}
-                    onClick={onBrowsePath}
-                    icon={<FolderOpenOutlined style={{ color: '#fff' }} />}
-                  />
-                </Input.Group>
-              </Form.Item>
-            </Col>
-          </Row>
+                </Form.Item>
+              </Col>
+            </Row>
 
-          {/* ── Row 4: SDK Path ── */}
-          <Row>
-            <Col span={24}>
-              <Form.Item label={t('sdkPath')} name="sdkPath" rules={sdkPathRules}>
-                <Input.Group compact>
-                  <Input
-                    readOnly
-                    style={{ width: 'calc(100% - 37px)' }}
-                    placeholder={t('sdkPathInputPrompt')}
-                    value={sdkPath}
-                    onClick={onBrowseSdkPath}
-                  />
-                  <Button
-                    type="primary"
-                    style={{ paddingLeft: 10 }}
-                    onClick={onBrowseSdkPath}
-                    icon={<FolderOpenOutlined style={{ color: '#fff' }} />}
-                  />
-                </Input.Group>
-              </Form.Item>
-            </Col>
-          </Row>
+            {/* ── Row 3: Project Path ── */}
+            <Row>
+              <Col span={24}>
+                <p>{t('projectPath')}</p>
+                <Form.Item name="projectPath" rules={pathRules}>
+                  <Input.Group compact>
+                    <Input
+                      readOnly
+                      style={{ width: 'calc(100% - 37px)' }}
+                      placeholder={t('projectPathInputPrompt')}
+                      value={projectPath}
+                      onClick={onBrowsePath}
+                    />
+                    <Button
+                      type="primary"
+                      style={{ paddingLeft: 10 }}
+                      onClick={onBrowsePath}
+                      icon={<FolderOpenOutlined style={{ color: '#fff' }} />}
+                    />
+                  </Input.Group>
+                </Form.Item>
+              </Col>
+            </Row>
 
+            {/* ── Row 4: SDK Path ── */}
+            <Row>
+              <Col span={24}>
+                <p>{t('sdkPath')}</p>
+                <Form.Item name="sdkPath" rules={sdkPathRules}>
+                  <Input.Group compact>
+                    <Input
+                      readOnly
+                      style={{ width: 'calc(100% - 37px)' }}
+                      placeholder={t('sdkPathInputPrompt')}
+                      value={sdkPath}
+                      onClick={onBrowseSdkPath}
+                    />
+                    <Button
+                      type="primary"
+                      style={{ paddingLeft: 10 }}
+                      onClick={onBrowseSdkPath}
+                      icon={<FolderOpenOutlined style={{ color: '#fff' }} />}
+                    />
+                  </Input.Group>
+                </Form.Item>
+              </Col>
+            </Row>
+
+          </Space>
         </Form>
       </Modal>
 
